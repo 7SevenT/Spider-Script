@@ -7,7 +7,7 @@
 import os               # 创建目录
 import requests         # 请求库
 from lxml import etree  # 解析库
-from time import sleep
+from time import sleep  # 程序休眠
 
 # 全局变量
 # 编号
@@ -127,8 +127,7 @@ def get_page(page_url):
 def down_load(series_src, path_name):
     """
     :param series_src:套图网址
-    :param path_name:
-    :return:
+    :param path_name:文件夹名称
     """
     global num
     # 1.解析图片原地址
@@ -136,7 +135,6 @@ def down_load(series_src, path_name):
 
     # img_total = series_tree.xpath('//p[@align="center"]//a')
     # img_total = int(str(img_total[0]).split('/')[1]) # 对原数据进行处理
-    #
 
     img_src_list = [] # 套图中每张图片的原址
     for img_num in range(1, 200):
@@ -155,8 +153,6 @@ def down_load(series_src, path_name):
     print(title)
 
     # 3.修改名称
-    if ']' in title:
-        title = title.split(']')[1]
     title = title.replace('/', '')
     title = 'NO ' + str(num) + '、' + title  # 为文件夹编写序号
     num += 1  # 将编号加一
@@ -169,8 +165,8 @@ def down_load(series_src, path_name):
 
     # 5.套图名称写入目录
     with open('G:/看妹图/' + path_name + '/目录.txt', 'a', encoding='utf-8') as fp:
-        if not os.path.exists(path):
-            fp.write(title + '\n')
+        fp.write(title + '\n')
+        fp.close()
 
     # 6.将套图中图片保存到文件夹中
     for img_index in range(0, len(img_src_list)):
@@ -196,36 +192,46 @@ def down_load(series_src, path_name):
 # 主程序
 if __name__ == '__main__':
     while True:
-        # 检索关键字
-        base_url = search()
-        img_src_list = display(base_url)
-        # 选择下载
-        while True:
-            choice = int(input('1-全部下载,2-范围下载,3-编号下载,4-返回搜索,5-关闭程序:'))
-            if choice == 1:
-                print("准备下载全部套图...")
-            elif choice == 2:
-                start_num = int(input('请输入开始编号：'))
-                end_num = int(input('请输入结尾编号：'))
-                img_src_list = img_src_list[start_num-1:end_num]
-                print("准备下载"+str(start_num)+'到'+str(end_num)+'套图...')
-            elif choice == 3:
-                nums = int(input("请选择下载的编号:"))
-                img_src_list = img_src_list[nums-1:nums]
-                print('准备下载'+str(nums)+'套图...')
-            elif choice == 4:
+        way = int(input('请选择模式 1-网址下载 2-搜索下载 3-关闭程序:'))
+        if way == 1:
+            src = input('请输入套图网址:')
+            path_name = input('请输入存放的文件夹:')
+            down_load(src,path_name)
+        elif way == 2:
+            while True:
+                # 检索关键字
+                base_url = search()
+                img_src_list = display(base_url)
+                #选择下载
+                choice = int(input('请选择下载 1-全部下载 2-范围下载 3-编号下载 4-返回搜索 5-选择模式:'))
+                if choice == 1:
+                    print("准备下载全部套图...")
+                elif choice == 2:
+                    start_num = int(input('请输入套图起始编号：'))
+                    end_num = int(input('请输入套图结尾编号：'))
+                    img_src_list = img_src_list[start_num-1:end_num]
+                    print("准备下载"+str(start_num)+'到'+str(end_num)+'套图...')
+                elif choice == 3:
+                    nums = int(input("请选择套图编号:"))
+                    img_src_list = img_src_list[nums-1:nums]
+                    print('准备下载'+str(nums)+'套图...')
+                elif choice == 4:
+                    continue
+                elif choice == 5:
+                    break
+                else:
+                    print("输入错误,请重新选择！")
+                    continue
+                # 获取存放地点及编号
+                path_name = str(input("请输入存放的文件夹:"))
+                num = int(input("请输入存放套图起始编号:"))
+                # 下载
+                for i in range(len(img_src_list)):
+                    down_load(img_src_list[i], path_name)
+                print('下载结束!')
                 break
-            elif choice == 5:
-                print('程序关闭!')
-                exit(0)
-            else:
-                print("输入错误,请重新选择！")
-                continue
-            # 获取存放地点及编号
-            path_name = str(input("请输入需要存放的文件夹:"))
-            num = int(input("请输入存放开始编号:"))
-            # 下载
-            for i in range(len(img_src_list)):
-                down_load(img_src_list[i], path_name)
-            print('下载结束，程序关闭！')
+        elif way == 3:
+            print('程序关闭！')
             exit(0)
+        else:
+            print('输入有误,请重新输入！')
